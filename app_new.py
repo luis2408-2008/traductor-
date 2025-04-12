@@ -338,8 +338,8 @@ st.markdown("""
 with st.sidebar:
     st.title("Configuración")
     theme = st.radio("Tema", ["Claro", "Oscuro"], 
-                     index=0 if st.session_state.theme == 'light' else 1,
-                     horizontal=True)
+                    index=0 if st.session_state.theme == 'light' else 1,
+                    horizontal=True)
     st.session_state.theme = 'light' if theme == "Claro" else 'dark'
     
     st.markdown("---")
@@ -446,54 +446,6 @@ with st.container():
             # Translate text with new target language if text exists
             if st.session_state.input_text:
                 translate_and_update()
-
-# Function to translate text and update session
-def translate_and_update():
-    try:
-        # Auto-detect if source is 'auto'
-        if st.session_state.source_language == 'auto':
-            detected = detect_language(st.session_state.input_text)
-            # Make sure the detected language is in the available languages
-            st.session_state.detected_language = detected if detected in available_languages else 'en'
-            source_lang = st.session_state.detected_language
-        else:
-            source_lang = st.session_state.source_language
-            st.session_state.detected_language = source_lang
-        
-        # Get translation
-        st.session_state.translated_text = translate_text(
-            st.session_state.input_text, 
-            source_lang, 
-            st.session_state.target_language
-        )
-        
-        # Add to history if it's a meaningful translation
-        if st.session_state.translated_text and st.session_state.translated_text != st.session_state.input_text:
-            history_entry = (
-                st.session_state.detected_language if st.session_state.source_language == 'auto' else st.session_state.source_language,
-                st.session_state.target_language, 
-                st.session_state.input_text, 
-                st.session_state.translated_text
-            )
-            if history_entry not in st.session_state.history:
-                st.session_state.history.append(history_entry)
-                # Keep only the last 10 translations
-                if len(st.session_state.history) > 10:
-                    st.session_state.history.pop(0)
-    except Exception as e:
-        st.error(f"Error de traducción: {str(e)}")
-        st.session_state.translated_text = ""
-
-# Text input callback - to be used when text changes
-def handle_text_change():
-    text = st.session_state.text_input
-    if text != st.session_state.input_text:
-        st.session_state.input_text = text
-        # Translate only if there's text to translate
-        if text:
-            translate_and_update()
-        else:
-            st.session_state.translated_text = ""
 
 # Main container for text areas with glassmorphism effect
 st.markdown("""
@@ -659,7 +611,7 @@ st.markdown("---")
 st.markdown(
     """
     <div style='text-align: center;'>
-        <p>Desarrollado con deep-translator y Streamlit | 2023</p>
+        <p style="color: rgba(255, 255, 255, 0.7);">Desarrollado con deep-translator y Streamlit | 2023</p>
     </div>
     """,
     unsafe_allow_html=True
