@@ -1,8 +1,8 @@
 
-from app import st
 import streamlit.web.bootstrap as bootstrap
 
 def run():
-    bootstrap.run(st, "", [], [])
+    bootstrap.run("app.py", "", [], [])
 
-app = run()
+if __name__ == "__main__":
+    run()
