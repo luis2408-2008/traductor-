@@ -2,7 +2,7 @@ import streamlit as st
 from deep_translator import GoogleTranslator
 from translator import get_languages, translate_text, detect_language
 from tts import text_to_speech
-from utils import LANGUAGE_NAMES, update_translation
+from utils import LANGUAGE_NAMES
 import base64
 from tempfile import NamedTemporaryFile
 import os
@@ -94,10 +94,14 @@ with col2:
     if st.button("🔄 Swap", use_container_width=True):
         # Only swap if not using auto-detect
         if st.session_state.source_language != 'auto':
-            st.session_state.source_language, st.session_state.target_language = st.session_state.target_language, st.session_state.source_language
-            # Update the translation if there's input text
+            temp_source = st.session_state.source_language
+            temp_target = st.session_state.target_language
+            st.session_state.source_language = temp_target
+            st.session_state.target_language = temp_source
+            
+            # Update translation with swapped languages
             if st.session_state.input_text:
-                # Force a rerun to update the UI with the new translation
+                # Force a rerun to update the UI 
                 st.rerun()
 
 # Target language selection
@@ -106,7 +110,7 @@ with col3:
     target_language_list = list(available_languages.keys())
     default_index = 0
     
-    # Try to find the index of the session target language, use default if not found
+    # Try to find the index of the session target language
     try:
         if st.session_state.target_language in target_language_list:
             default_index = target_language_list.index(st.session_state.target_language)
@@ -120,25 +124,73 @@ with col3:
         format_func=lambda x: LANGUAGE_NAMES.get(x, x),
         index=default_index
     )
-    st.session_state.target_language = target_language
+    # Update session state when target language changes
+    if st.session_state.target_language != target_language:
+        st.session_state.target_language = target_language
+        # Translate text with new target language if text exists
+        if st.session_state.input_text:
+            st.rerun()
 
 # Text input area
 st.subheader("Enter text to translate")
 
-# This function updates the input text in session state and triggers translation
-def update_input_text():
-    # Update the input text in session state
-    st.session_state.input_text = st.session_state.input_text_area
-    
-# Configure text input area with callback
+# Text input callback - to be used when text changes
+def handle_text_change():
+    text = st.session_state.text_input
+    if text != st.session_state.input_text:
+        st.session_state.input_text = text
+        # Translate only if there's text to translate
+        if text:
+            translate_and_update()
+        else:
+            st.session_state.translated_text = ""
+            
+# Function to translate text and update session
+def translate_and_update():
+    try:
+        # Auto-detect if source is 'auto'
+        if st.session_state.source_language == 'auto':
+            detected = detect_language(st.session_state.input_text)
+            # Make sure the detected language is in the available languages
+            st.session_state.detected_language = detected if detected in available_languages else 'en'
+            source_lang = st.session_state.detected_language
+        else:
+            source_lang = st.session_state.source_language
+            st.session_state.detected_language = source_lang
+        
+        # Get translation
+        st.session_state.translated_text = translate_text(
+            st.session_state.input_text, 
+            source_lang, 
+            st.session_state.target_language
+        )
+        
+        # Add to history if it's a meaningful translation
+        if st.session_state.translated_text and st.session_state.translated_text != st.session_state.input_text:
+            history_entry = (
+                st.session_state.detected_language if st.session_state.source_language == 'auto' else st.session_state.source_language,
+                st.session_state.target_language, 
+                st.session_state.input_text, 
+                st.session_state.translated_text
+            )
+            if history_entry not in st.session_state.history:
+                st.session_state.history.append(history_entry)
+                # Keep only the last 10 translations
+                if len(st.session_state.history) > 10:
+                    st.session_state.history.pop(0)
+    except Exception as e:
+        st.error(f"Translation error: {str(e)}")
+        st.session_state.translated_text = ""
+
+# Input text area with callback
 input_text = st.text_area(
     "Original Text",
     value=st.session_state.input_text,
     height=150,
     placeholder="Type or paste text here...",
     label_visibility="collapsed",
-    key="input_text_area",
-    on_change=update_input_text
+    key="text_input",
+    on_change=handle_text_change
 )
 
 # Clear button
@@ -146,29 +198,13 @@ col1, col2 = st.columns([6, 1])
 with col2:
     if st.button("Clear", use_container_width=True):
         st.session_state.input_text = ""
+        st.session_state.text_input = ""
         st.session_state.translated_text = ""
         st.rerun()
 
-# Process translation when input changes
-if input_text and (input_text == st.session_state.input_text):
-    # Call the update_translation utility function to handle translation
-    update_translation()
-    
-    # Add to history if it's a meaningful translation
-    if st.session_state.translated_text and st.session_state.translated_text != input_text:
-        history_entry = (
-            st.session_state.detected_language if st.session_state.source_language == 'auto' else st.session_state.source_language,
-            st.session_state.target_language, 
-            input_text, 
-            st.session_state.translated_text
-        )
-        if history_entry not in st.session_state.history:
-            st.session_state.history.append(history_entry)
-            # Keep only the last 10 translations
-            if len(st.session_state.history) > 10:
-                st.session_state.history.pop(0)
-elif not input_text:
-    st.session_state.translated_text = ""
+# Translate if text exists but translated_text is empty
+if st.session_state.input_text and not st.session_state.translated_text:
+    translate_and_update()
 
 # Show detected language if using auto-detect
 if st.session_state.source_language == 'auto' and st.session_state.detected_language:
