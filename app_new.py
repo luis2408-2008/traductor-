@@ -394,7 +394,8 @@ with st.container():
             options=list(available_languages.keys()),
             format_func=lambda x: LANGUAGE_NAMES.get(x, x),
             index=list(available_languages.keys()).index(st.session_state.source_language) if st.session_state.source_language in available_languages else 0,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            key="source_lang_select"
         )
         if st.session_state.source_language != source_language:
             st.session_state.source_language = source_language
@@ -437,7 +438,8 @@ with st.container():
             options=list(available_languages.keys()),
             format_func=lambda x: LANGUAGE_NAMES.get(x, x),
             index=list(available_languages.keys()).index(st.session_state.target_language) if st.session_state.target_language in available_languages else 0,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            key="target_lang_select"
         )
         
         # Update session state when target language changes
