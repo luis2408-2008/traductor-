@@ -394,7 +394,8 @@ with st.container():
             options=list(available_languages.keys()),
             format_func=lambda x: LANGUAGE_NAMES.get(x, x),
             index=list(available_languages.keys()).index(st.session_state.source_language) if st.session_state.source_language in available_languages else 0,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            key="source_language_select"
         )
         if st.session_state.source_language != source_language:
             st.session_state.source_language = source_language
@@ -418,8 +419,8 @@ with st.container():
         </script>
         """, unsafe_allow_html=True)
         
-        # Ocultar el botón real de Streamlit pero mantener su funcionalidad
-        if st.button("Intercambiar", key="swap-languages-btn", label_visibility="collapsed"):
+        # Botón real de Streamlit pero con estilo invisible
+        if st.button("", key="swap-languages-btn"):
             temp_source = st.session_state.source_language
             temp_target = st.session_state.target_language
             st.session_state.source_language = temp_target
@@ -437,7 +438,8 @@ with st.container():
             options=list(available_languages.keys()),
             format_func=lambda x: LANGUAGE_NAMES.get(x, x),
             index=list(available_languages.keys()).index(st.session_state.target_language) if st.session_state.target_language in available_languages else 0,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            key="target_language_select"
         )
         
         # Update session state when target language changes
@@ -545,7 +547,7 @@ with col1:
         """, unsafe_allow_html=True)
 
 with col2:
-    if st.button("🗑️ Borrar", use_container_width=True, type="secondary"):
+    if st.button("🗑️ Borrar", use_container_width=True, type="secondary", key="clear_button"):
         st.session_state.input_text = ""
         # No podemos modificar text_input directamente después de que se haya creado el widget
         # En su lugar, limpiaremos el texto y recargaremos la página
@@ -626,7 +628,7 @@ if st.session_state.translated_text:
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("📋 Copiar", use_container_width=True):
+        if st.button("📋 Copiar", use_container_width=True, key="copy_button"):
             st.toast("¡Traducción copiada al portapapeles!")
             st.write(f'<p id="translated-text" style="position: absolute; top: -9999px;">{st.session_state.translated_text}</p>', unsafe_allow_html=True)
             st.write("""
@@ -637,7 +639,7 @@ if st.session_state.translated_text:
             """, unsafe_allow_html=True)
     
     with col2:
-        if st.button("🔊 Escuchar", use_container_width=True):
+        if st.button("🔊 Escuchar", use_container_width=True, key="listen_button"):
             try:
                 with st.spinner("Generando audio..."):
                     audio_file = text_to_speech(

@@ -418,8 +418,8 @@ with st.container():
         </script>
         """, unsafe_allow_html=True)
         
-        # Ocultar el botón real de Streamlit pero mantener su funcionalidad
-        if st.button("Intercambiar", key="swap-languages-btn", label_visibility="collapsed"):
+        # Botón real de Streamlit pero con estilo invisible
+        if st.button("", key="swap-languages-btn"):
             temp_source = st.session_state.source_language
             temp_target = st.session_state.target_language
             st.session_state.source_language = temp_target
