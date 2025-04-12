@@ -9,10 +9,58 @@ import os
 
 # App configuration
 st.set_page_config(
-    page_title="MultiLingual Translator",
+    page_title="Traductor Multilingüe",
     page_icon="🌐",
     layout="wide"
 )
+
+# Custom CSS to make the app look more native on mobile
+st.markdown("""
+<style>
+    /* Reset and base styles */
+    * {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    /* Header styles */
+    h1, h2, h3 {
+        font-weight: 500;
+    }
+    
+    /* Input fields */
+    .stTextInput > div > div > input, .stTextArea > div > div > textarea {
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        padding: 8px 12px;
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        border-radius: 10px;
+        font-weight: 500;
+        box-shadow: none;
+        background-color: #f7f7f7;
+        transition: all 0.2s;
+    }
+    
+    .stButton > button:hover {
+        background-color: #ebebeb;
+        box-shadow: none;
+    }
+    
+    /* Select box */
+    .stSelectbox > div > div {
+        border-radius: 10px;
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+        .stButton > button, .stSelectbox, .stTextInput, .stTextArea {
+            width: 100%;
+        }
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # Get available languages
 available_languages = get_languages()
@@ -51,39 +99,67 @@ with col1:
         </div>
     """, unsafe_allow_html=True)
 with col2:
-    st.title("MultiLingual Translator")
-    st.markdown("##### Translate text between multiple languages in real-time")
+    st.title("Traductor Multilingüe")
+    st.markdown("##### Traduce texto entre múltiples idiomas en tiempo real")
 
 # Theme switcher in the sidebar
 with st.sidebar:
-    st.title("Settings")
-    theme = st.radio("Theme", ["Light", "Dark"], 
+    st.title("Configuración")
+    theme = st.radio("Tema", ["Claro", "Oscuro"], 
                      index=0 if st.session_state.theme == 'light' else 1,
                      horizontal=True)
-    st.session_state.theme = 'light' if theme == "Light" else 'dark'
+    st.session_state.theme = 'light' if theme == "Claro" else 'dark'
     
     st.markdown("---")
-    st.subheader("Recent Translations")
+    st.subheader("Traducciones Recientes")
     
     # Display history
     if st.session_state.history:
         for i, (src, tgt, txt, trans) in enumerate(st.session_state.history[-5:]):
-            with st.expander(f"{LANGUAGE_NAMES.get(src, 'Auto')} → {LANGUAGE_NAMES.get(tgt, 'Unknown')}", expanded=False):
+            with st.expander(f"{LANGUAGE_NAMES.get(src, 'Auto')} → {LANGUAGE_NAMES.get(tgt, 'Desconocido')}", expanded=False):
                 st.write(f"**Original:** {txt[:50]}{'...' if len(txt) > 50 else ''}")
-                st.write(f"**Translation:** {trans[:50]}{'...' if len(trans) > 50 else ''}")
+                st.write(f"**Traducción:** {trans[:50]}{'...' if len(trans) > 50 else ''}")
     else:
-        st.write("No recent translations")
+        st.write("No hay traducciones recientes")
 
 # Main translation interface
 col1, col2, col3 = st.columns([2, 1, 2])
 
+# Definir los idiomas más comunes
+common_languages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'zh-CN', 'ja', 'ko', 'ru', 'ar', 'hi']
+
 # Source language selection
 with col1:
+    # Agregar una opción para buscar entre todos los idiomas
+    show_all_source = st.checkbox("Mostrar todos los idiomas", value=False, key="show_all_source")
+    
+    if show_all_source:
+        # Si se muestra todos los idiomas, permitir búsqueda
+        source_search = st.text_input("Buscar idioma", placeholder="Escribe para buscar...", key="source_search")
+        source_options = ['auto']
+        
+        # Filtrar idiomas basado en la búsqueda
+        if source_search:
+            for lang_code in available_languages.keys():
+                lang_name = LANGUAGE_NAMES.get(lang_code, lang_code)
+                if source_search.lower() in lang_name.lower():
+                    source_options.append(lang_code)
+        else:
+            source_options += list(available_languages.keys())
+    else:
+        # Mostrar solo idiomas comunes
+        source_options = ['auto'] + [lang for lang in common_languages if lang in available_languages]
+    
+    # Determinar el índice actual
+    current_source_index = 0
+    if st.session_state.source_language in source_options:
+        current_source_index = source_options.index(st.session_state.source_language)
+        
     source_language = st.selectbox(
-        "Source Language",
-        ['auto'] + list(available_languages.keys()),
-        format_func=lambda x: 'Auto Detect' if x == 'auto' else LANGUAGE_NAMES.get(x, x),
-        index=0
+        "Idioma de origen",
+        source_options,
+        format_func=lambda x: 'Detectar automáticamente' if x == 'auto' else LANGUAGE_NAMES.get(x, x),
+        index=current_source_index
     )
     st.session_state.source_language = source_language
 
@@ -91,7 +167,7 @@ with col1:
 with col2:
     st.write("")
     st.write("")
-    if st.button("🔄 Swap", use_container_width=True):
+    if st.button("🔄 Intercambiar", use_container_width=True):
         # Only swap if not using auto-detect
         if st.session_state.source_language != 'auto':
             temp_source = st.session_state.source_language
@@ -106,24 +182,42 @@ with col2:
 
 # Target language selection
 with col3:
-    # Check if target language is in available languages
-    target_language_list = list(available_languages.keys())
-    default_index = 0
+    # Agregar una opción para buscar entre todos los idiomas
+    show_all_target = st.checkbox("Mostrar todos los idiomas", value=False, key="show_all_target")
     
-    # Try to find the index of the session target language
-    try:
-        if st.session_state.target_language in target_language_list:
-            default_index = target_language_list.index(st.session_state.target_language)
-    except:
-        # If there's any error, default to first language
-        pass
+    if show_all_target:
+        # Si se muestra todos los idiomas, permitir búsqueda
+        target_search = st.text_input("Buscar idioma", placeholder="Escribe para buscar...", key="target_search")
+        target_options = []
         
+        # Filtrar idiomas basado en la búsqueda
+        if target_search:
+            for lang_code in available_languages.keys():
+                lang_name = LANGUAGE_NAMES.get(lang_code, lang_code)
+                if target_search.lower() in lang_name.lower():
+                    target_options.append(lang_code)
+        else:
+            target_options = list(available_languages.keys())
+    else:
+        # Mostrar solo idiomas comunes
+        target_options = [lang for lang in common_languages if lang in available_languages]
+    
+    # Asegurarse de que el idioma actual esté en las opciones
+    if st.session_state.target_language not in target_options:
+        target_options.append(st.session_state.target_language)
+    
+    # Determinar el índice actual
+    default_index = 0
+    if st.session_state.target_language in target_options:
+        default_index = target_options.index(st.session_state.target_language)
+       
     target_language = st.selectbox(
-        "Target Language",
-        target_language_list,
+        "Idioma de destino",
+        target_options,
         format_func=lambda x: LANGUAGE_NAMES.get(x, x),
         index=default_index
     )
+    
     # Update session state when target language changes
     if st.session_state.target_language != target_language:
         st.session_state.target_language = target_language
@@ -132,7 +226,7 @@ with col3:
             st.rerun()
 
 # Text input area
-st.subheader("Enter text to translate")
+st.subheader("Escribe texto para traducir")
 
 # Text input callback - to be used when text changes
 def handle_text_change():
@@ -179,15 +273,15 @@ def translate_and_update():
                 if len(st.session_state.history) > 10:
                     st.session_state.history.pop(0)
     except Exception as e:
-        st.error(f"Translation error: {str(e)}")
+        st.error(f"Error de traducción: {str(e)}")
         st.session_state.translated_text = ""
 
 # Input text area with callback
 input_text = st.text_area(
-    "Original Text",
+    "Texto Original",
     value=st.session_state.input_text,
     height=150,
-    placeholder="Type or paste text here...",
+    placeholder="Escribe o pega texto aquí...",
     label_visibility="collapsed",
     key="text_input",
     on_change=handle_text_change
@@ -196,7 +290,7 @@ input_text = st.text_area(
 # Clear button
 col1, col2 = st.columns([6, 1])
 with col2:
-    if st.button("Clear", use_container_width=True):
+    if st.button("Borrar", use_container_width=True):
         st.session_state.input_text = ""
         st.session_state.text_input = ""
         st.session_state.translated_text = ""
@@ -208,15 +302,15 @@ if st.session_state.input_text and not st.session_state.translated_text:
 
 # Show detected language if using auto-detect
 if st.session_state.source_language == 'auto' and st.session_state.detected_language:
-    st.info(f"Detected language: {LANGUAGE_NAMES.get(st.session_state.detected_language, st.session_state.detected_language)}")
+    st.info(f"Idioma detectado: {LANGUAGE_NAMES.get(st.session_state.detected_language, st.session_state.detected_language)}")
 
 # Translation output area
-st.subheader("Translation")
+st.subheader("Traducción")
 st.text_area(
-    "Translated Text",
+    "Texto Traducido",
     value=st.session_state.translated_text,
     height=150,
-    placeholder="Translation will appear here...",
+    placeholder="La traducción aparecerá aquí...",
     label_visibility="collapsed",
     key="output_text_area",
     disabled=True
@@ -227,8 +321,8 @@ if st.session_state.translated_text:
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("📋 Copy to Clipboard", use_container_width=True):
-            st.toast("Translation copied to clipboard!")
+        if st.button("📋 Copiar", use_container_width=True):
+            st.toast("¡Traducción copiada al portapapeles!")
             st.write(f'<p id="translated-text" style="position: absolute; top: -9999px;">{st.session_state.translated_text}</p>', unsafe_allow_html=True)
             st.write("""
             <script>
@@ -238,9 +332,9 @@ if st.session_state.translated_text:
             """, unsafe_allow_html=True)
     
     with col2:
-        if st.button("🔊 Text to Speech", use_container_width=True):
+        if st.button("🔊 Escuchar", use_container_width=True):
             try:
-                with st.spinner("Generating audio..."):
+                with st.spinner("Generando audio..."):
                     audio_file = text_to_speech(
                         st.session_state.translated_text,
                         st.session_state.target_language
@@ -251,16 +345,16 @@ if st.session_state.translated_text:
                     
                     # Play the audio
                     st.audio(audio_bytes, format='audio/mp3')
-                    st.success("Audio generated successfully!")
+                    st.success("¡Audio generado correctamente!")
             except Exception as e:
-                st.error(f"Error generating audio: {str(e)}")
+                st.error(f"Error al generar audio: {str(e)}")
 
 # Footer
 st.markdown("---")
 st.markdown(
     """
     <div style='text-align: center;'>
-        <p>Powered by deep-translator and Streamlit | 2023</p>
+        <p>Desarrollado con deep-translator y Streamlit | 2023</p>
     </div>
     """,
     unsafe_allow_html=True
