@@ -19,9 +19,15 @@ available_languages = get_languages()
 
 # Initialize session state variables if they don't exist
 if 'source_language' not in st.session_state:
-    st.session_state.source_language = 'auto'
+    # Set to Spanish as default if available, otherwise first language
+    if 'es' in available_languages:
+        st.session_state.source_language = 'es'
+    else:
+        # Use first available language as default
+        st.session_state.source_language = list(available_languages.keys())[0]
+        
 if 'target_language' not in st.session_state:
-    # Set initial target language to first available language or 'en' if it exists
+    # Set initial target language to English if available
     if 'en' in available_languages:
         st.session_state.target_language = 'en'
     else:
