@@ -14,54 +14,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS to make the app look more native on mobile
-st.markdown("""
-<style>
-    /* Reset and base styles */
-    * {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
-    
-    /* Header styles */
-    h1, h2, h3 {
-        font-weight: 500;
-    }
-    
-    /* Input fields */
-    .stTextInput > div > div > input, .stTextArea > div > div > textarea {
-        border-radius: 10px;
-        border: 1px solid #e0e0e0;
-        padding: 8px 12px;
-    }
-    
-    /* Buttons */
-    .stButton > button {
-        border-radius: 10px;
-        font-weight: 500;
-        box-shadow: none;
-        background-color: #f7f7f7;
-        transition: all 0.2s;
-    }
-    
-    .stButton > button:hover {
-        background-color: #ebebeb;
-        box-shadow: none;
-    }
-    
-    /* Select box */
-    .stSelectbox > div > div {
-        border-radius: 10px;
-    }
-    
-    /* Mobile optimizations */
-    @media (max-width: 768px) {
-        .stButton > button, .stSelectbox, .stTextInput, .stTextArea {
-            width: 100%;
-        }
-    }
-</style>
-""", unsafe_allow_html=True)
-
 # Get available languages
 available_languages = get_languages()
 
@@ -130,30 +82,17 @@ common_languages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'zh-CN', 'ja', 'ko', 'ru
 
 # Source language selection
 with col1:
-    # Agregar una opción para buscar entre todos los idiomas
-    show_all_source = st.checkbox("Mostrar todos los idiomas", value=False, key="show_all_source")
-    
-    if show_all_source:
-        # Si se muestra todos los idiomas, permitir búsqueda
-        source_search = st.text_input("Buscar idioma", placeholder="Escribe para buscar...", key="source_search")
-        source_options = ['auto']
-        
-        # Filtrar idiomas basado en la búsqueda
-        if source_search:
-            for lang_code in available_languages.keys():
-                lang_name = LANGUAGE_NAMES.get(lang_code, lang_code)
-                if source_search.lower() in lang_name.lower():
-                    source_options.append(lang_code)
-        else:
-            source_options += list(available_languages.keys())
-    else:
-        # Mostrar solo idiomas comunes
-        source_options = ['auto'] + [lang for lang in common_languages if lang in available_languages]
+    # Mostrar solo idiomas comunes
+    source_options = ['auto'] + [lang for lang in common_languages if lang in available_languages]
     
     # Determinar el índice actual
     current_source_index = 0
     if st.session_state.source_language in source_options:
         current_source_index = source_options.index(st.session_state.source_language)
+    elif st.session_state.source_language != 'auto':
+        # Si el idioma actual no está en las opciones comunes, agregarlo
+        source_options.append(st.session_state.source_language)
+        current_source_index = len(source_options) - 1
         
     source_language = st.selectbox(
         "Idioma de origen",
@@ -182,25 +121,8 @@ with col2:
 
 # Target language selection
 with col3:
-    # Agregar una opción para buscar entre todos los idiomas
-    show_all_target = st.checkbox("Mostrar todos los idiomas", value=False, key="show_all_target")
-    
-    if show_all_target:
-        # Si se muestra todos los idiomas, permitir búsqueda
-        target_search = st.text_input("Buscar idioma", placeholder="Escribe para buscar...", key="target_search")
-        target_options = []
-        
-        # Filtrar idiomas basado en la búsqueda
-        if target_search:
-            for lang_code in available_languages.keys():
-                lang_name = LANGUAGE_NAMES.get(lang_code, lang_code)
-                if target_search.lower() in lang_name.lower():
-                    target_options.append(lang_code)
-        else:
-            target_options = list(available_languages.keys())
-    else:
-        # Mostrar solo idiomas comunes
-        target_options = [lang for lang in common_languages if lang in available_languages]
+    # Mostrar solo idiomas comunes
+    target_options = [lang for lang in common_languages if lang in available_languages]
     
     # Asegurarse de que el idioma actual esté en las opciones
     if st.session_state.target_language not in target_options:
