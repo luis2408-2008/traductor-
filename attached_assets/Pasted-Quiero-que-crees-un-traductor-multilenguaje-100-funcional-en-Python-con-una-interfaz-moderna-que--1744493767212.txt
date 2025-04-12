@@ -1,0 +1,45 @@
+Quiero que crees un traductor multilenguaje 100% funcional en Python, con una interfaz moderna, que sea completamente interactiva, rápida y capaz de traducir entre decenas o cientos de idiomas, similar (o mejor) que Google Translate. Quiero que sea algo profesional, una locura de funcional, hermoso y fluido.
+
+Especificaciones Técnicas:
+
+1. Lenguaje:
+	•	Todo el código debe estar escrito en Python.
+	•	Debe usar bibliotecas modernas, eficientes y bien mantenidas.
+
+2. Traducción en Tiempo Real:
+	•	Al escribir en un cuadro de texto, la traducción debe aparecer automáticamente en otro campo debajo (como lo hace Google Translate).
+	•	La traducción debe ser en línea, instantánea, sin necesidad de presionar un botón (uso de eventos en tiempo real o hilos).
+
+3. Soporte de Idiomas:
+	•	Debe ser capaz de detectar y traducir entre muchos idiomas (al menos los más usados: inglés, español, francés, portugués, alemán, italiano, japonés, chino, árabe, ruso, etc.).
+	•	Uso de bibliotecas como translate, deep-translator, googletrans o API externas si se desea (puedes incluir interfaces opcionales con servicios como Google Translate, LibreTranslate, etc.).
+	•	El sistema debe auto-detectar el idioma original o dejar al usuario elegir el idioma de entrada y salida.
+
+4. Interfaz de Usuario Moderna:
+	•	Usa una GUI moderna y visualmente atractiva. Recomendado: Tkinter, PyQt5, customtkinter, Kivy, o DearPyGui.
+	•	Interfaz limpia y responsiva.
+	•	Tema claro y oscuro.
+	•	Cuadro de texto de entrada arriba.
+	•	Traducción en tiempo real abajo.
+	•	Selector de idioma de entrada/salida en dropdowns personalizables.
+	•	Botón para copiar el texto traducido.
+	•	Botón para intercambiar idiomas (reversar traducción).
+	•	Indicador visual de idioma detectado.
+
+5. Extras Avanzados:
+	•	Agrega botón para leer en voz alta (text-to-speech) el texto traducido.
+	•	Soporte para pegar texto desde el portapapeles.
+	•	Opción para limpiar campos de texto con un clic.
+	•	Posibilidad de guardar traducciones en historial (con SQLite o archivo plano).
+	•	Animaciones suaves o transiciones visuales entre cambios de texto.
+	•	Modo offline si es posible (usando modelos pre-entrenados o traducciones básicas).
+
+6. Código Limpio y Profesional:
+	•	Organizado en módulos y funciones claras.
+	•	Documentación y comentarios en todo el código.
+	•	Fácil de ejecutar en cualquier sistema operativo (Windows, Mac, Linux).
+	•	Requisitos listos en un requirements.txt.
+
+⸻
+
+Resumen general: Quiero un traductor en Python que sea de otro mundo: rápido, inteligente, automático, con interfaz hermosa, traducción en tiempo real mientras escribo, compatible con múltiples idiomas y con extras avanzados como lectura en voz alta, historial y detección de idioma. Que sea algo top, moderno, digno de una startup o producto profesional.
