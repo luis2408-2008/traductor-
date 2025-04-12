@@ -82,8 +82,8 @@ common_languages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'zh-CN', 'ja', 'ko', 'ru
 
 # Source language selection
 with col1:
-    # Mostrar solo idiomas comunes
-    source_options = ['auto'] + [lang for lang in common_languages if lang in available_languages]
+    # Mostrar solo idiomas comunes (sin opción 'auto')
+    source_options = [lang for lang in common_languages if lang in available_languages]
     
     # Determinar el índice actual
     current_source_index = 0
@@ -97,7 +97,7 @@ with col1:
     source_language = st.selectbox(
         "Idioma de origen",
         source_options,
-        format_func=lambda x: 'Detectar automáticamente' if x == 'auto' else LANGUAGE_NAMES.get(x, x),
+        format_func=lambda x: LANGUAGE_NAMES.get(x, x),
         index=current_source_index
     )
     st.session_state.source_language = source_language
@@ -214,7 +214,8 @@ col1, col2 = st.columns([6, 1])
 with col2:
     if st.button("Borrar", use_container_width=True):
         st.session_state.input_text = ""
-        st.session_state.text_input = ""
+        # No podemos modificar text_input directamente después de que se haya creado el widget
+        # En su lugar, limpiaremos el texto y recargaremos la página
         st.session_state.translated_text = ""
         st.rerun()
 
