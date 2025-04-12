@@ -83,28 +83,13 @@ with st.sidebar:
 # Main translation interface
 col1, col2, col3 = st.columns([2, 1, 2])
 
-# Definir los idiomas más comunes
-common_languages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'zh-CN', 'ja', 'ko', 'ru', 'ar', 'hi']
-
 # Source language selection
 with col1:
-    # Mostrar solo idiomas comunes (sin opción 'auto')
-    source_options = [lang for lang in common_languages if lang in available_languages]
-    
-    # Determinar el índice actual
-    current_source_index = 0
-    if st.session_state.source_language in source_options:
-        current_source_index = source_options.index(st.session_state.source_language)
-    elif st.session_state.source_language != 'auto':
-        # Si el idioma actual no está en las opciones comunes, agregarlo
-        source_options.append(st.session_state.source_language)
-        current_source_index = len(source_options) - 1
-        
     source_language = st.selectbox(
         "Idioma de origen",
-        source_options,
+        options=list(available_languages.keys()),
         format_func=lambda x: LANGUAGE_NAMES.get(x, x),
-        index=current_source_index
+        index=list(available_languages.keys()).index(st.session_state.source_language) if st.session_state.source_language in available_languages else 0
     )
     st.session_state.source_language = source_language
 
@@ -113,37 +98,23 @@ with col2:
     st.write("")
     st.write("")
     if st.button("🔄 Intercambiar", use_container_width=True):
-        # Only swap if not using auto-detect
-        if st.session_state.source_language != 'auto':
-            temp_source = st.session_state.source_language
-            temp_target = st.session_state.target_language
-            st.session_state.source_language = temp_target
-            st.session_state.target_language = temp_source
-            
-            # Update translation with swapped languages
-            if st.session_state.input_text:
-                # Force a rerun to update the UI 
-                st.rerun()
+        temp_source = st.session_state.source_language
+        temp_target = st.session_state.target_language
+        st.session_state.source_language = temp_target
+        st.session_state.target_language = temp_source
+        
+        # Update translation with swapped languages
+        if st.session_state.input_text:
+            # Force a rerun to update the UI 
+            st.rerun()
 
 # Target language selection
 with col3:
-    # Mostrar solo idiomas comunes
-    target_options = [lang for lang in common_languages if lang in available_languages]
-    
-    # Asegurarse de que el idioma actual esté en las opciones
-    if st.session_state.target_language not in target_options:
-        target_options.append(st.session_state.target_language)
-    
-    # Determinar el índice actual
-    default_index = 0
-    if st.session_state.target_language in target_options:
-        default_index = target_options.index(st.session_state.target_language)
-       
     target_language = st.selectbox(
         "Idioma de destino",
-        target_options,
+        options=list(available_languages.keys()),
         format_func=lambda x: LANGUAGE_NAMES.get(x, x),
-        index=default_index
+        index=list(available_languages.keys()).index(st.session_state.target_language) if st.session_state.target_language in available_languages else 0
     )
     
     # Update session state when target language changes
